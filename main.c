@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+//По идее эта шутка должна вернуть массив с командой и с аргументами
+//Мб сделать структуру тип cmd??
+void make_cmd() {
+
+}
 
 
 int main() {
@@ -12,16 +20,14 @@ int main() {
 
     //Пока пиши как получается, потом отрефакторишь
     while (true) {
-        //Как-то это по-уебански выглядит
-        char cmd[256] = "";
-        char* arguments[256][256] = 
+
         printf("Enter ur command %s ", prompt);
         scanf("%256s", cmd_input);
-        cmd_tokenized = strtok(cmd_input, " ");
-        while (cmd_tokenized != NULL) {
-            
-            cmd_tokenized = strtok(NULL, " ");
-        }
+        
+        //Проблема в том, что на одной итерации, он считывает только одно слово, после этого он переходит на другую.
+        //В итоге забывается предыдущая опция =>Надо как-то считать всю строку так, чтоб она не перетиралась и осталось всё в одной итерации
+
+        
     }
 
 

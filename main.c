@@ -78,13 +78,13 @@ int main()
     loop {
         printf("%s ", prompt);
         scanf(" %256[^\n\r]", cmd_input);
+        
         struct CMD* cmd = parse_command(cmd_input);
         if (cmd == NULL) {
             fprintf(stderr, "cmd struct is NULL\n");
         }
 
         pid_t res = run_command(cmd);
-        
         if (res < 0) {
             printf("%d\n", res);
             perror("error run command");

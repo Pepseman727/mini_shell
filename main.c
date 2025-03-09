@@ -43,7 +43,7 @@ pid_t run_command(struct CMD* cmd)
 
     if (pid < 0) {
         fprintf(stderr, "Fork error\n");
-        return -1;
+        res = pid;
     } else if (pid == 0) {
         char* path_env = getenv("PATH");
         char* envp[] = {path_env, NULL};

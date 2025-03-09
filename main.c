@@ -39,7 +39,7 @@ struct CMD* parse_command(char* cmd_input)
 pid_t run_command(struct CMD* cmd) 
 {
     pid_t pid = fork();
-    pid_t chld_pid;
+    pid_t res;
 
     if (pid < 0) {
         fprintf(stderr, "Fork error\n");
@@ -49,9 +49,9 @@ pid_t run_command(struct CMD* cmd)
         char* envp[] = {path_env, NULL};
         execvpe(cmd->args[0], cmd->args, envp);
     } else {
-        chld_pid= wait(NULL);
+        res = wait(NULL);
     }
-    return chld_pid;
+    return res;
 }
 
 int main()
@@ -69,7 +69,7 @@ int main()
         if (res < 0) {
             fprintf(stderr, "Error run command\n");
         }
-        
+
         printf("\n");
         free(cmd);
     }

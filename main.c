@@ -49,6 +49,7 @@ pid_t run_command(struct CMD* cmd)
         char* envp[] = {path_env, NULL};
         execvpe(cmd->args[0], cmd->args, envp);
     } else {
+        //Переделать на вызов waitpid???
         res = wait(NULL);
     }
     return res;

@@ -76,7 +76,7 @@ int main()
     char cmd_input[MAX_CMD] = "";
 
     loop {
-        puts(prompt);
+        printf("%s ", prompt);
         scanf(" %256[^\n\r]", cmd_input);
         
         struct CMD* cmd = parse_command(cmd_input);
@@ -90,7 +90,7 @@ int main()
             perror("error run command");
         }
 
-        puts("\n");
+        putchar('\n');
         free(cmd);
     }
 

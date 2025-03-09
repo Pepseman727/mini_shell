@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -10,32 +11,35 @@
 
 //По идее эта шутка должна вернуть массив с командой и с аргументами
 //Мб сделать структуру тип cmd??
-/*void parse_command(char* cmd_input)  
+struct CMD 
 {
-    char* cmd_tok = NULL;
-    char* rest = cmd_input;
-    
-    while((cmd_tok = strtok_r(NULL, " ", &rest))) {
-        printf("%s\n", cmd_tok);
-    }
+    char* command;
+    char* args[MAX_ARGCOUNT];
+    //Как будто и без неё всё работает, но вдруг компилятор не будет делать null для ячеек массива, которые не использовались
+    size_t argslen;
+};
 
-}
-*/
-
-void parse_command(char* cmd_input) {
+struct CMD* parse_command(char* cmd_input) {
+    struct CMD* result = malloc(sizeof(struct CMD));
     char* cmd_tok = strtok(cmd_input, " ");
+    size_t index = 0;
+
+    result->command = cmd_tok;
     while (cmd_tok != NULL) {
-        printf("\t%s\n", cmd_tok);
+        
         cmd_tok = strtok(NULL, " ");
+        result->args[index] = cmd_tok;
+        ++index;
     }
-    
+    //Уменьшаем на единицу, чтобы не трогать элемент, идущий за последним аргументом
+    result->argslen = --index;
+    return result;
 
 }
 
 
 int main()
 {
-    
     //Пока не буду делать разницу между пользователями
     const char* prompt = "Enter ur command ->";
     char cmd_input[MAX_CMD] = "";
@@ -45,12 +49,15 @@ int main()
         printf("%s ", prompt);
         scanf(" %256[^\n\r]", cmd_input);
 
-        parse_command(cmd_input);
+        struct CMD* cmd = parse_command(cmd_input);
         
-        //Проблема в том, что на одной итерации, он считывает только одно слово, после этого он переходит на другую.
-        //В итоге забывается предыдущая опция => Надо как-то считать всю строку так, чтоб она не перетиралась и осталось всё в одной итерации
+        printf("%s\n", cmd->command);
+        for (size_t index = 0; index < cmd->argslen; ++index) {
+            printf("%s ", cmd->args[index]);
 
-        
+        }
+        printf("\n");
+        free(cmd);
     }
 
     return 0;

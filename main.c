@@ -36,22 +36,22 @@ struct CMD* parse_command(char* cmd_input)
 
 }
 
-//Не совсем уверен, что правильно выхожу из функции
 pid_t run_command(struct CMD* cmd) 
 {
     pid_t pid = fork();
+    pid_t chld_pid;
+
     if (pid < 0) {
         fprintf(stderr, "Fork error\n");
         return -1;
     } else if (pid == 0) {
         char* path_env = getenv("PATH");
         char* envp[] = {path_env, NULL};
-        int res = execvpe(cmd->args[0], cmd->args, envp);
-        exit(res);
+        execvpe(cmd->args[0], cmd->args, envp);
     } else {
-        pid_t chld_pid = wait(NULL);
-        return chld_pid;
+        chld_pid= wait(NULL);
     }
+    return chld_pid;
 }
 
 int main()
@@ -64,7 +64,12 @@ int main()
         printf("%s ", prompt);
         scanf(" %256[^\n\r]", cmd_input);
         struct CMD* cmd = parse_command(cmd_input);
-        run_command(cmd);
+        pid_t res = run_command(cmd);
+        
+        if (res < 0) {
+            fprintf(stderr, "Error run command\n");
+        }
+        
         printf("\n");
         free(cmd);
     }

@@ -59,8 +59,7 @@ int main()
     //Пока не буду делать разницу между пользователями
     const char* prompt = "mini_shell ->";
     char cmd_input[MAX_CMD] = "";
-    
-    //Пока пиши как получается, потом отрефакторишь
+
     for(;;) {
         printf("%s ", prompt);
         scanf(" %256[^\n\r]", cmd_input);

@@ -62,10 +62,8 @@ int main()
             printf("%d\n", res);
             exit(0);
         } else {
-            int pid_wait = wait(NULL);
+            wait(NULL);
         }
-
-
         free(cmd);
     }
 

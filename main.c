@@ -39,7 +39,7 @@ struct CMD* parse_command(char* cmd_input) {
 int main()
 {
     //Пока не буду делать разницу между пользователями
-    const char* prompt = "Enter ur command ->";
+    const char* prompt = "mini_shell ->";
     char cmd_input[MAX_CMD] = "";
     
     //Пока пиши как получается, потом отрефакторишь
@@ -64,6 +64,7 @@ int main()
         } else {
             wait(NULL);
         }
+        printf("\n");
         free(cmd);
     }
 

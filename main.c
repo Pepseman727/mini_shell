@@ -11,25 +11,25 @@
 #define MAX_CMD 256
 #define MAX_ARGCOUNT 256
 
-extern char** environ;
+extern char **environ;
 
 struct CMD 
 {
-    char* args[MAX_ARGCOUNT];
+    char *args[MAX_ARGCOUNT];
     //Как будто и без неё всё работает, но вдруг компилятор не будет делать null для ячеек массива, которые не использовались
     size_t argslen;
 };
 
-struct CMD* parse_command(char* cmd_input) 
+struct CMD * parse_command(char *cmd_input) 
 {
     if (cmd_input == NULL) {
         fprintf(stderr, "parse_command error: input is NULL\n");
         return NULL;
     }
 
-    char* cmd_tok = strtok(cmd_input, " ");
+    char *cmd_tok = strtok(cmd_input, " ");
     size_t index = 1;
-    struct CMD* result = malloc(sizeof(struct CMD));
+    struct CMD *result = malloc(sizeof(struct CMD));
     if (!result) {
         perror("malloc error");
         return NULL;
@@ -47,7 +47,7 @@ struct CMD* parse_command(char* cmd_input)
     return result;
 }
 
-pid_t run_command(struct CMD* cmd) 
+pid_t run_command(struct CMD *cmd) 
 {
     pid_t pid = fork();
     pid_t res;
@@ -72,14 +72,14 @@ pid_t run_command(struct CMD* cmd)
 int main()
 {
     //Пока не буду делать разницу между пользователями
-    const char* prompt = "mini_shell ->";
+    const char *prompt = "mini_shell ->";
     char cmd_input[MAX_CMD] = "";
 
     loop {
         printf("%s ", prompt);
         scanf(" %256[^\n\r]", cmd_input);
         
-        struct CMD* cmd = parse_command(cmd_input);
+        struct CMD *cmd = parse_command(cmd_input);
         if (cmd == NULL) {
             fprintf(stderr, "cmd struct is NULL\n");
         }

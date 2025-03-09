@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
+#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 
@@ -10,6 +10,8 @@
 #define loop for(;;)
 #define MAX_CMD 256
 #define MAX_ARGCOUNT 256
+
+extern char** environ;
 
 struct CMD 
 {
@@ -20,21 +22,29 @@ struct CMD
 
 struct CMD* parse_command(char* cmd_input) 
 {
-    struct CMD* result = malloc(sizeof(struct CMD));
+    if (cmd_input == NULL) {
+        fprintf(stderr, "parse_command error: input is NULL\n");
+        return NULL;
+    }
+
     char* cmd_tok = strtok(cmd_input, " ");
     size_t index = 1;
+    struct CMD* result = malloc(sizeof(struct CMD));
+    if (!result) {
+        perror("malloc error");
+        return NULL;
+    }
 
     result->args[0] = cmd_tok;
-    while (cmd_tok != NULL) {
+    while (cmd_tok != NULL && index < MAX_ARGCOUNT - 1) {
         cmd_tok = strtok(NULL, " ");
-        result->args[index] = cmd_tok;
-        ++index;
+        result->args[index++] = cmd_tok;
     }
     //Уменьшаем на единицу, чтобы не трогать элемент, идущий за последним аргументом
     result->args[index] = NULL;
-    result->argslen = --index;
-    return result;
+    result->argslen = index;
 
+    return result;
 }
 
 pid_t run_command(struct CMD* cmd) 
@@ -43,16 +53,16 @@ pid_t run_command(struct CMD* cmd)
     pid_t res;
 
     if (pid < 0) {
-        perror("Fork error: ");
+        perror("fork error");
         res = -1;
     } else if (pid == 0) {
-        execvpe(cmd->args[0], cmd->args, __environ);
-        perror("Execvp error : ");
+        execvpe(cmd->args[0], cmd->args, environ);
+        perror("exec error");
         _exit(EXIT_FAILURE);
     } else {
         int status;
-        if (waitpid(pid, &status, 0)) {
-            perror("Waitpid error: ");
+        if (!waitpid(pid, &status, 0)) {
+            perror("waitpid error");
             res = -1;
         }
     }
@@ -69,10 +79,15 @@ int main()
         printf("%s ", prompt);
         scanf(" %256[^\n\r]", cmd_input);
         struct CMD* cmd = parse_command(cmd_input);
+        if (cmd == NULL) {
+            fprintf(stderr, "cmd struct is NULL\n");
+        }
+
         pid_t res = run_command(cmd);
         
         if (res < 0) {
-            perror("Error run command: ");
+            printf("%d\n", res);
+            perror("error run command");
         }
 
         printf("\n");

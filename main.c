@@ -16,7 +16,8 @@ struct CMD
     size_t argslen;
 };
 
-struct CMD* parse_command(char* cmd_input) {
+struct CMD* parse_command(char* cmd_input) 
+{
     struct CMD* result = malloc(sizeof(struct CMD));
     char* cmd_tok = strtok(cmd_input, " ");
     size_t index = 1;
@@ -36,7 +37,8 @@ struct CMD* parse_command(char* cmd_input) {
 }
 
 //Не совсем уверен, что правильно выхожу из функции
-pid_t run_command(struct CMD* cmd) {
+pid_t run_command(struct CMD* cmd) 
+{
     pid_t pid = fork();
     if (pid < 0) {
         fprintf(stderr, "Fork error\n");

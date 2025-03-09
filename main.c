@@ -1,8 +1,11 @@
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/wait.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
+
 
 #define loop for(;;)
 #define MAX_CMD 256

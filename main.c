@@ -5,48 +5,69 @@
 #include <stdlib.h>
 #include <sys/wait.h>
 #include <sys/types.h>
-
+#include <stdbool.h>
 
 #define loop for(;;)
-#define MAX_CMD 256
+#define MAX_INPUT 256
 #define MAX_ARGCOUNT 256
 
 extern char **environ;
 
+//Атомарная команда. То, что больше нельзя дробить
+//Дробить можно по ; или |
+//Всё остальное относится к команде
+//Дробление по пробелам означает изменение полей структуры
 struct CMD 
 {
-    char *args[MAX_ARGCOUNT];
-    //Как будто и без неё всё работает, но вдруг компилятор не будет делать null для ячеек массива, которые не использовались
+    char  *args[MAX_ARGCOUNT];
     size_t argslen;
+    int    in;
+    int    out;
+    bool   run_in_bg;
 };
 
-struct CMD * parse_command(char *cmd_input) 
+//Функция-конструктор, чтобы заполнить поля нужными значениями
+struct CMD * default_cmd() {
+    struct CMD *result = malloc(sizeof(struct CMD));
+    result->run_in_bg = false;
+    result->in        = STDIN_FILENO;
+    result->out       = STDOUT_FILENO;
+    
+    return result;
+}
+
+struct CMD * split_command(char *cmd_input, char *delim) 
 {
     if (cmd_input == NULL) {
-        fprintf(stderr, "parse_command error: input is NULL\n");
+        fprintf(stderr, "split_command error: input is NULL\n");
         return NULL;
     }
 
-    char *cmd_tok = strtok(cmd_input, " ");
-    size_t index = 1;
-    struct CMD *result = malloc(sizeof(struct CMD));
+    struct CMD *result = default_cmd();
+
     if (!result) {
-        perror("malloc error");
+        perror("create CMD error");
         return NULL;
     }
+
+    char *cmd_tok = strtok(cmd_input, delim);
+    size_t index = 1;
+    
 
     result->args[0] = cmd_tok;
     while (cmd_tok != NULL && index < MAX_ARGCOUNT - 1) {
-        cmd_tok = strtok(NULL, " ");
+        cmd_tok = strtok(NULL, delim);
         result->args[index++] = cmd_tok;
     }
     //Уменьшаем на единицу, чтобы не трогать элемент, идущий за последним аргументом
     result->args[index] = NULL;
-    result->argslen = index;
+    result->argslen     = --index;
 
     return result;
 }
 
+
+//Выполняет одну атомарную команду
 pid_t run_command(struct CMD *cmd) 
 {
     pid_t pid = fork();
@@ -60,11 +81,15 @@ pid_t run_command(struct CMD *cmd)
         perror("exec error");
         _exit(EXIT_FAILURE);
     } else {
-        int status;
-        if (!waitpid(pid, &status, 0)) {
-            perror("waitpid error");
-            res = -1;
+
+        if (!cmd->run_in_bg) {
+            int status;
+            if (!waitpid(pid, &status, 0)) {
+                perror("waitpid error");
+                res = -1;
+            }
         }
+
     }
     return res;
 }
@@ -73,25 +98,34 @@ int main()
 {
     //Пока не буду делать разницу между пользователями
     const char *prompt = "mini_shell ->";
-    char cmd_input[MAX_CMD] = "";
+    char cmd_input[MAX_INPUT] = "";
 
     loop {
         printf("%s ", prompt);
         scanf(" %256[^\n\r]", cmd_input);
         
-        struct CMD *cmd = parse_command(cmd_input);
-        if (cmd == NULL) {
+        struct CMD *cmd_seq = split_command(cmd_input, ";");
+        if (cmd_seq == NULL) {
             fprintf(stderr, "cmd struct is NULL\n");
         }
 
-        pid_t res = run_command(cmd);
-        if (res < 0) {
-            printf("%d\n", res);
-            perror("error run command");
+        
+        for (size_t index = 0; index < cmd_seq->argslen; ++index) {
+            struct CMD *cmd = split_command(cmd_seq->args[index], " ");
+            if (cmd == NULL) {
+                fprintf(stderr, "cmd struct is NULL\n");
+            }
+            
+            pid_t res = run_command(cmd);
+            if (res < 0) {
+                printf("%d\n", res);
+                perror("error run command");
+            }
+            free(cmd);
         }
 
         putchar('\n');
-        free(cmd);
+        free(cmd_seq);
     }
 
     return 0;

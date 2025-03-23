@@ -11,9 +11,5 @@ Additional functional:
 ✅ Background processes support (&)  
 🔹 Signal processing (Ctrl+C, Ctrl+Z)  
 
-Advanced level:  
-🔹 Pipe support (|)  
-🔹 I/O redirect (>, <, >>)  
-🔹 Own commands (cd, exit, history)  
 ---
 The project was created with the aim of understanding Linux programming    

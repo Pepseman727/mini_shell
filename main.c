@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <stdbool.h>
 
-#define loop for(;;)
+#define loop while(true)
 #define MAX_INPUT 256
 #define MAX_ARGCOUNT 256
 

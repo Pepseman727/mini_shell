@@ -159,8 +159,6 @@ void sigint_handler()
     }
 }
 
-//signal() deprecated
-//sigaction is cool, modern -- yeeeaaah
 void signals_init(struct sigaction *sa_arr) 
 {
 
@@ -190,7 +188,8 @@ void run_last_bgproc()
 }
 
 //TODO добавить создание и запись в файл истории выполнения
-void show_history() {
+void show_history() 
+{
     struct CMD *cmd = split_command("cat .minish", " ");
     run_command(cmd);
     free(cmd);

@@ -130,7 +130,7 @@ pid_t run_command(struct CMD *cmd)
         } else {
 
             if (!waitpid(fg_pid, NULL, 0)) {
-                perror("waitpid error");
+                perror("[x] waitpid error");
                 res = -1;
             }
         }

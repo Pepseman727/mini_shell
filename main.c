@@ -23,11 +23,6 @@ size_t bg_proc_count = 0;
 pid_t  bg_procs[MAX_BG_PROC];
 pid_t  fg_pid = -1;
 
-
-
-
-
-
 //Атомарная команда. То, что больше нельзя дробить
 //Дробить можно по ; или |
 //Всё остальное относится к команде
@@ -42,7 +37,8 @@ struct CMD
 };
 
 //Функция-конструктор, чтобы заполнить поля нужными значениями
-struct CMD * default_cmd() {
+struct CMD * default_cmd() 
+{
     struct CMD *result = malloc(sizeof(struct CMD));
     result->in         = STDIN_FILENO;
     result->out        = STDOUT_FILENO;
@@ -206,6 +202,7 @@ void clear_cmdinput(char *cmd_input, size_t size)
     }
 }
 
+//TODO надо сделать так, чтобы при нажатии ctrl+z|c не происходило никаких крашей
 int main()
 {
     const char *prompt = "mini_shell > ";

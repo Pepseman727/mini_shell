@@ -15,7 +15,7 @@ Advanced level:
 🔹 Pipe support ( | )  
 🔹 I/O redirect (>, <, >>)  
 Own commands:  
-    cd  
+	cd  
 ✅ exit  
     history  
 

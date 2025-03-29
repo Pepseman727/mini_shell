@@ -9,7 +9,7 @@ Minimal functional (MVP):
 Additional functional:  
 ✅ Processing multiple commands in a line (ls; pwd; whoami)  
 ✅ Background processes support (&)  
-🔹 Signal processing (Ctrl+C, Ctrl+Z)
+✅ Signal processing (Ctrl+C, Ctrl+Z)
 
 Advanced level:  
 🔹 Pipe support (|)  

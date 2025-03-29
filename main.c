@@ -6,12 +6,27 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <stdbool.h>
+#include <signal.h>
 
 #define loop while(true)
 #define MAX_INPUT 256
 #define MAX_ARGCOUNT 256
+#define MAX_BG_PROC 5
+#define SIGACT_COUNT 2
+#define SIGTSTP_KEY 0
+#define SIGINT_KEY  1
+
 
 extern char **environ;
+
+size_t bg_proc_count = 0;
+pid_t  bg_procs[MAX_BG_PROC];
+pid_t  fg_pid = -1;
+
+
+
+
+
 
 //Атомарная команда. То, что больше нельзя дробить
 //Дробить можно по ; или |
@@ -39,8 +54,6 @@ struct CMD * default_cmd() {
 /*Название не совсем подходит, так как тут помимо разбиения происходит 
     что-то типо парсинга
 */
-
-
 
 struct CMD * split_command(char *cmd_input, char *delim) 
 {
@@ -81,10 +94,8 @@ struct CMD * split_command(char *cmd_input, char *delim)
     return result_cmd;
 }
 
-
 void set_bgrun(struct CMD *cmd)
 {
-    //Какой-то хуйни накрутил
     for (size_t index = 0; index < cmd->argslen; ++index) {
         char *tmp = cmd->args[index];
         char *bg_symb = strchr(tmp, '&');
@@ -101,7 +112,6 @@ void set_bgrun(struct CMD *cmd)
     }
 
 }
-
 //Выполняет одну атомарную команду
 pid_t run_command(struct CMD *cmd) 
 {
@@ -116,31 +126,77 @@ pid_t run_command(struct CMD *cmd)
         perror("[x] exec error");
         _exit(EXIT_FAILURE);
     } else {
-
+        fg_pid = pid;
         //В целом работает, но косячит приглашение ввода
         if (cmd->run_in_bg) {
             printf("[-] run in background by PID: %d\n", pid);
             res = pid;
         } else {
-            int status;
-            if (!waitpid(pid, &status, 0)) {
+
+            if (!waitpid(fg_pid, NULL, 0)) {
                 perror("waitpid error");
                 res = -1;
             }
         }
+        fg_pid = -1;
 
     }
     return res;
 }
 
+void sigtstp_handler() {
+    if (fg_pid > 0) {
+        printf("\n[-] Stopped %d\n", fg_pid);
+        kill(fg_pid, SIGTSTP);
+        bg_procs[bg_proc_count++] = fg_pid;
+        fg_pid = -1;
+    }
+}
+
+void sigint_handler() {
+    if (fg_pid > 0) {
+        printf("\nKilled... Good Bye %d :(\n", fg_pid);
+        kill(fg_pid, SIGINT);
+    }
+}
+
+//signal() deprecated
+//sigaction is cool, modern -- yeeeaaah
+void signals_init(struct sigaction *sa_arr) {
+
+    sa_arr[SIGTSTP_KEY].sa_handler = sigtstp_handler;
+    sigemptyset(&sa_arr[SIGTSTP_KEY].sa_mask);
+    sa_arr[SIGTSTP_KEY].sa_flags = 0;
+    sigaction(SIGTSTP, &sa_arr[SIGTSTP_KEY], NULL);
+
+    sa_arr[SIGINT_KEY].sa_handler = sigint_handler;
+    sigemptyset(&sa_arr[SIGINT_KEY].sa_mask);
+    sa_arr[SIGINT_KEY].sa_flags = 0;
+    sigaction(SIGINT, &sa_arr[SIGINT_KEY], NULL);
+
+}
+
+void run_last_bgproc() {
+    if (bg_proc_count > 0) {
+        pid_t pid = bg_procs[--bg_proc_count];
+        fg_pid = pid;
+        kill(pid, SIGCONT);
+        waitpid(pid, NULL, 0);
+        fg_pid = -1;
+    } else {
+        printf("\nNo stopped processes\n");
+    }
+}
+
 int main()
 {
-    //Пока не буду делать разницу между пользователями
-    const char *prompt = "mini_shell ->";
+    const char *prompt = "mini_shell > ";
     char cmd_input[MAX_INPUT] = "";
+    struct sigaction sa_arr[SIGACT_COUNT];
+    signals_init(sa_arr);
 
     loop {
-        printf("%s ", prompt);
+        printf("%s", prompt);
         scanf(" %256[^\n\r]", cmd_input);
         
         struct CMD *cmd_seq = split_command(cmd_input, ";");
@@ -149,7 +205,6 @@ int main()
             continue;
         }
 
-        
         for (size_t index = 0; index < cmd_seq->argslen; ++index) {
             struct CMD *cmd = split_command(cmd_seq->args[index], " ");
 
@@ -157,6 +212,16 @@ int main()
 
             if (cmd == NULL) {
                 fprintf(stderr, "[x] cmd struct is NULL\n");
+            }
+
+            if (strcmp(cmd->args[0], "exit") == 0) {
+                exit(EXIT_SUCCESS);
+            }
+
+            if (strcmp(cmd->args[0], "fg") == 0) {
+                run_last_bgproc();
+                free(cmd);
+                continue;
             }
 
             pid_t res = run_command(cmd);

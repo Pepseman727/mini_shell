@@ -214,7 +214,7 @@ int main()
     loop {
         printf("%s", prompt);
         scanf(" %256[^\n\r]", cmd_input);
-        
+       //Мб сделать это списком CMD, а не массивом, чтобы был логичный перескок на нужный адрес??? 
         struct CMD *cmd_seq = split_command(cmd_input, ";");
         if (cmd_seq == NULL) {
             fprintf(stderr, "[x] cmd seq struct is NULL\n");
@@ -230,6 +230,7 @@ int main()
                 fprintf(stderr, "[x] cmd struct is NULL\n");
             }
 
+            //Мб сделать какую-то отдельную функцию, чтобы там все встроенные команды были, а то с if'ами заёб
             if (strcmp(cmd->args[0], "exit") == 0) {
                 exit(EXIT_SUCCESS);
             }

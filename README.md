@@ -12,7 +12,7 @@ Additional functional:
 ✅ Signal processing (Ctrl+C, Ctrl+Z)
 
 Advanced level:  
-🔹 Pipe support (|)  
+🔹 Pipe support ( | )  
 🔹 I/O redirect (>, <, >>)  
 Own commands:
     cd

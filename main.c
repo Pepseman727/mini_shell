@@ -49,6 +49,7 @@ struct CMD * default_cmd()
 
 /*Название не совсем подходит, так как тут помимо разбиения происходит 
     что-то типо парсинга
+   TODO Сделай отдельную функцию по парсингу, чтобы она внутри уже как-то разбиралась
 */
 
 struct CMD * split_command(char *cmd_input, char *delim) 
@@ -68,10 +69,10 @@ struct CMD * split_command(char *cmd_input, char *delim)
     char *cmd_tok = strtok(cmd_input, delim);
     size_t index = 1;
     
-    if (strchr(cmd_tok, '&') !=NULL && (strlen(cmd_tok) != 1)) {
+    if (strchr(cmd_tok, '&') != NULL && (strlen(cmd_tok) != 1)) {
         result_cmd->run_in_bg = true;
         //Мб условие гавно
-    } else if (strchr(cmd_tok, '&') !=NULL && (strlen(cmd_tok) == 1)){
+    } else if (strchr(cmd_tok, '&') != NULL && (strlen(cmd_tok) == 1)){
         fprintf(stderr, "[x] Syntax error. Incorrect command: %s\n", cmd_tok);
         return NULL;
     }
@@ -98,7 +99,7 @@ void set_bgrun(struct CMD *cmd)
         
         if (!strcmp(tmp, "&")) {
             cmd->args[index] = NULL;
-            cmd->argslen -=1;
+            cmd->argslen -= 1;
             cmd->run_in_bg = true;
         } else if (bg_symb) {
             size_t bg_i = bg_symb - tmp;

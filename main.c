@@ -144,7 +144,8 @@ pid_t run_command(struct CMD *cmd)
     return res;
 }
 
-void sigtstp_handler() {
+void sigtstp_handler() 
+{
     if (fg_pid > 0) {
         printf("\n[-] Stopped %d\n", fg_pid);
         kill(fg_pid, SIGTSTP);
@@ -153,7 +154,8 @@ void sigtstp_handler() {
     }
 }
 
-void sigint_handler() {
+void sigint_handler() 
+{
     if (fg_pid > 0) {
         printf("\nKilled... Good Bye %d :(\n", fg_pid);
         kill(fg_pid, SIGINT);
@@ -162,7 +164,8 @@ void sigint_handler() {
 
 //signal() deprecated
 //sigaction is cool, modern -- yeeeaaah
-void signals_init(struct sigaction *sa_arr) {
+void signals_init(struct sigaction *sa_arr) 
+{
 
     sa_arr[SIGTSTP_KEY].sa_handler = sigtstp_handler;
     sigemptyset(&sa_arr[SIGTSTP_KEY].sa_mask);
@@ -176,7 +179,8 @@ void signals_init(struct sigaction *sa_arr) {
 
 }
 
-void run_last_bgproc() {
+void run_last_bgproc() 
+{
     if (bg_proc_count > 0) {
         pid_t pid = bg_procs[--bg_proc_count];
         fg_pid = pid;
@@ -188,10 +192,25 @@ void run_last_bgproc() {
     }
 }
 
+//TODO добавить создание и запись в файл истории выполнения
+void show_history() {
+    struct CMD *cmd = split_command("cat .minish", " ");
+    run_command(cmd);
+    free(cmd);
+}
+
+void clear_cmdinput(char *cmd_input, size_t size) 
+{
+    for (size_t i = 0; i < size; ++i) {
+        cmd_input[i] = '\0';
+    }
+}
+
 int main()
 {
     const char *prompt = "mini_shell > ";
-    char cmd_input[MAX_INPUT] = "";
+    char cmd_input[MAX_INPUT];
+    clear_cmdinput(cmd_input, MAX_INPUT);
     struct sigaction sa_arr[SIGACT_COUNT];
     signals_init(sa_arr);
 
@@ -220,7 +239,10 @@ int main()
 
             if (strcmp(cmd->args[0], "fg") == 0) {
                 run_last_bgproc();
-                free(cmd);
+                continue;
+            }
+            if (strcmp(cmd->args[0], "history") == 0) {
+                show_history();
                 continue;
             }
 
@@ -233,6 +255,7 @@ int main()
         }
 
         putchar('\n');
+        clear_cmdinput(cmd_input, MAX_INPUT);
         free(cmd_seq);
     }
 

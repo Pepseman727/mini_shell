@@ -230,7 +230,7 @@ int main()
             fprintf(stderr, "[x] cmd seq struct is NULL\n");
             continue;
         }
-
+         //Обработку нажатия enter без чего-либо сделай
         for (size_t index = 0; index < cmd_seq->argslen; ++index) {
             struct CMD *cmd = split_command(cmd_seq->args[index], " ");
 

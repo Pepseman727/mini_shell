@@ -260,11 +260,13 @@ int main()
                 perror("[x] error run command");
             }
             free(cmd);
+            cmd = NULL;
         }
 
         putchar('\n');
         clear_cmdinput(cmd_input, MAX_INPUT);
         free(cmd_seq);
+        cmd_seq = NULL;
     }
 
     return 0;
